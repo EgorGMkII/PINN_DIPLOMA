@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# IDE and OS
+.idea/
+.vscode/
+Thumbs.db
+.DS_Store
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+configs/local/
+
+# Data and generated artifacts
+data/raw/
+data/interim/
+data/processed/
+outputs/
+artifacts/
+checkpoints/
+wandb/
+*.pt
+*.pth
+*.ckpt
+*.h5
+*.npz
+*.csv
+
+# Keep small, explicitly versioned fixtures
+!tests/fixtures/*.npz
+!tests/fixtures/*.csv
+
