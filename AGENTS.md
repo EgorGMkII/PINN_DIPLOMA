@@ -9,7 +9,8 @@ Instructions for coding agents working on DiplomaPINN.
 3. `docs/data_spec.md`
 4. `docs/external_services.md` for logging or remote execution work
 5. The specification under `docs/experiments/` for the experiment in scope
-6. The active source file and its tests
+6. `docs/specifications/architecture.md` and the relevant focused specification
+7. The active source file and its tests
 
 ## Project Objective
 
@@ -67,3 +68,12 @@ Current mandatory formulations: strong velocity--pressure (`VP`), strong
 velocity--vorticity (`VV`), and mixed first-order (`FO`). Weak forms, SPAV,
 trajectory integration losses, KANs, and a general-purpose geometry framework
 are out of scope until the main comparison reaches its decision gate.
+
+## Current Implementation Stage
+
+The active scope is the `EXP-001` VP vertical slice. Follow
+`docs/specifications/implementation_tasks.md` in order. Do not fill several TODOs
+at once without running the focused correctness tests for the preceding task.
+Residual-adaptive sampling is not part of EXP-001. The post-parity observation
+sampler is stratified by time; the parity sampler remains the article's global
+shuffle.

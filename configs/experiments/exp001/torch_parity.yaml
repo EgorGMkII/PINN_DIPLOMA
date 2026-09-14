@@ -1,0 +1,30 @@
+experiment_id: EXP-001
+data:
+  path: REPLACE_IN_LOCAL_CONFIG
+  expected_sha256: REPLACE_WITH_VERIFIED_SHA256
+  batch_size: 4096
+  observation_sampling: global_shuffle
+model:
+  widths: [4, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 5]
+  dtype: float32
+physics:
+  formulation: vp
+  rayleigh: 1000000.0
+  prandtl: 0.7
+optimizer:
+  name: adam
+  learning_rate: 0.001
+  beta1: 0.9
+  beta2: 0.999
+  epsilon: 0.0000001
+  fused: false
+runtime:
+  seed: 2204
+  device: auto
+  execution_profile: parity
+  max_steps: 1
+tracking:
+  enabled: false
+  mode: disabled
+  project: diploma-pinn
+  group: EXP-001

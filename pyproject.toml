@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "diploma-pinn"
+version = "0.1.0"
+description = "Research framework for inverse Rayleigh-Benard PINN experiments"
+requires-python = ">=3.11"
+dependencies = ["numpy", "torch", "pyyaml"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+tracking = ["wandb"]
+
+[project.scripts]
+diploma-pinn = "diploma_pinn.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

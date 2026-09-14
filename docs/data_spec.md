@@ -24,6 +24,7 @@ C:/Users/egorg/PYTHON_WORK/PINN/multipinnFolder
 1. **Primary development/evaluation dataset:** штатный DNS reference
    `RBC_PTV_1E6_07_t_11.npz`, собранный без дополнительного time scaling из 11
    snapshots. Он используется в EXP-001 и следующих контролируемых DNS опытах.
+   Проверенный паспорт: [`datasets/RBC_PTV_1E6_07.md`](datasets/RBC_PTV_1E6_07.md).
 2. **Secondary transfer datasets:** `all_points_001_metric.csv` и
    `all_points_005_metric.csv`. Они используются после валидации метода для
    восстановления неизвестных T,p из velocity-only PTV data.
@@ -33,6 +34,10 @@ C:/Users/egorg/PYTHON_WORK/PINN/multipinnFolder
 Наличие T,p в primary DNS удобно не потому, что они подаются сети, а потому, что
 после velocity-only обучения позволяют немедленно и количественно проверить
 реконструкцию скрытых полей.
+
+Публичный `RBC_PTV_1E6_07` имеет `PTV` в имени, но фактически содержит 11 полей
+на одной неподвижной сетке `64^3`, а не particle tracks. Использовать термин
+«лагранжевы наблюдения» для этого конкретного test case нельзя.
 
 Большие файлы не копируются и не коммитятся. Локальные пути задаются через
 игнорируемый `configs/local/` или переменные окружения.

@@ -57,6 +57,8 @@ Primary independent variable на correctness-этапе -- backend. На perfor
 ## 5. Основной датасет
 
 Используется reference DNS `RBC_PTV_1E6_07`, Ra=`1e6`, Pr=`0.7`, 11 snapshots.
+Проверенный паспорт находится в
+[`../datasets/RBC_PTV_1E6_07.md`](../datasets/RBC_PTV_1E6_07.md).
 Каждый raw NPZ содержит строки:
 
 ```text
@@ -71,6 +73,10 @@ inputs:  (t,x,y,z)
 outputs: (u,v,w,T,p)
 ```
 
+Каждый snapshot имеет shape `(262144,9)`, то есть `64^3` пространственных точек;
+объединенный набор содержит `2,883,584` строк. Координаты неподвижны между
+временами, поэтому это эйлерова DNS-grid sequence, а не particle trajectories.
+
 Этот NPZ является primary dataset для EXP-001, потому что непосредственно
 соответствует TensorFlow-коду и содержит T,p для evaluation. В training data
 loss используются только `u,v,w`; T,p остаются скрытой ground truth.
@@ -80,9 +86,12 @@ loss используются только `u,v,w`; T,p остаются скр�
 не используются, поскольку не имеют T,p ground truth и предназначены для
 последующего PTV transfer.
 
-До запуска в `docs/data_spec.md` должны быть записаны fingerprint объединенного
-NPZ, shapes, dtype, ranges и подтвержденное отсутствие дополнительного time
-scaling.
+До запуска должен быть создан объединенный NPZ штатным preprocessing, записан
+его fingerprint и проверено совпадение с raw hashes из dataset profile.
+
+Raw значения уже безразмерны. Для EXP-001 запрещены дополнительный min-max,
+z-score или remapping времени. На диске dtype `float64`; оба backend получают
+явно преобразованные одинаковые `float32` tensors.
 
 ## 6. Каноническая VP-задача
 
@@ -345,4 +354,3 @@ checkpoints, raw profiler traces и W&B directories не коммитятся.
 После прохождения gates `TORCH-EAGER` или корректный `TORCH-COMPILED` становится
 единым VP baseline нового проекта. Только после этого создается EXP-002 для
 реализации/пилота VV и FO.
-
