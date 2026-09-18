@@ -45,7 +45,7 @@ def _run_smoke(config) -> int:
     if config.runtime.execution_profile != "smoke":
         raise ValueError("--smoke requires runtime.execution_profile: smoke")
     report = validate_rbc_dns(config.data.path, config.data.expected_sha256)
-    seed_everything(config.runtime.seed, deterministic=True)
+    seed_everything(config.runtime.seed, deterministic=config.runtime.deterministic)
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     output_dir = config.runtime.output_dir / run_id
     output_dir.mkdir(parents=True, exist_ok=False)

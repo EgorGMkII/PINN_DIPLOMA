@@ -38,6 +38,7 @@ class OptimizerConfig:
 @dataclass(frozen=True)
 class RuntimeConfig:
     seed: int = 2204
+    deterministic: bool = False
     device: str = "auto"
     execution_profile: str = "parity"
     max_steps: int = 1

@@ -20,6 +20,7 @@ optimizer:
   fused: false
 runtime:
   seed: 2204
+  deterministic: false
   device: cpu
   execution_profile: smoke
   max_steps: 3
