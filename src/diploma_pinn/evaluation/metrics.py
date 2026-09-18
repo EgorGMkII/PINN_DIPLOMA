@@ -10,6 +10,7 @@ from torch import Tensor
 class FieldMetrics:
     relative_l2: dict[str, float]
     mse: dict[str, float]
+    correlation: dict[str, float]
 
 
 def align_pressure_gauge(predicted: Tensor, target: Tensor, times: Tensor) -> Tensor:
@@ -36,9 +37,16 @@ def compute_field_metrics(predicted: Tensor, target: Tensor, times: Tensor) -> F
     names = ("u", "v", "w", "T", "p")
     mse: dict[str, float] = {}
     relative_l2: dict[str, float] = {}
+    correlation: dict[str, float] = {}
     for index, name in enumerate(names):
         error = aligned[:, index] - target[:, index]
         mse[name] = float(error.square().mean())
         denominator = torch.linalg.vector_norm(target[:, index])
         relative_l2[name] = float(torch.linalg.vector_norm(error) / denominator.clamp_min(torch.finfo(target.dtype).eps))
-    return FieldMetrics(relative_l2=relative_l2, mse=mse)
+        centered_prediction = aligned[:, index] - aligned[:, index].mean()
+        centered_target = target[:, index] - target[:, index].mean()
+        correlation[name] = float(
+            (centered_prediction * centered_target).sum()
+            / (torch.linalg.vector_norm(centered_prediction) * torch.linalg.vector_norm(centered_target)).clamp_min(torch.finfo(target.dtype).eps)
+        )
+    return FieldMetrics(relative_l2=relative_l2, mse=mse, correlation=correlation)

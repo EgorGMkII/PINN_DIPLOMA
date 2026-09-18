@@ -12,6 +12,7 @@ import torch
 
 from diploma_pinn.config import config_to_dict, load_config, write_resolved_config
 from diploma_pinn.data import validate_rbc_dns
+from diploma_pinn.evaluation import Evaluator
 from diploma_pinn.instrumentation.manifest import RunManifest, collect_environment
 from diploma_pinn.runtime import seed_everything
 from diploma_pinn.training.factory import build_experiment
@@ -36,13 +37,13 @@ def main(argv: list[str] | None = None) -> int:
         report = validate_rbc_dns(config.data.path, config.data.expected_sha256)
         print(json.dumps({**report.__dict__, "path": str(report.path)}, indent=2, default=list))
         return 0
-    if arguments.command == "train" and arguments.smoke:
-        return _run_smoke(config)
+    if arguments.command == "train":
+        return _run_training(config, require_smoke=arguments.smoke)
     raise NotImplementedError(f"command is not implemented yet: {arguments.command}")
 
 
-def _run_smoke(config) -> int:
-    if config.runtime.execution_profile != "smoke":
+def _run_training(config, *, require_smoke: bool) -> int:
+    if require_smoke and config.runtime.execution_profile != "smoke":
         raise ValueError("--smoke requires runtime.execution_profile: smoke")
     report = validate_rbc_dns(config.data.path, config.data.expected_sha256)
     seed_everything(config.runtime.seed, deterministic=config.runtime.deterministic)
@@ -80,6 +81,13 @@ def _run_smoke(config) -> int:
         "dataset_rows": report.rows,
         "dataset_sha256": report.sha256,
     }
+    if config.runtime.evaluate_after_run:
+        evaluation = Evaluator(experiment.dataset, config.runtime.evaluation_batch_size).evaluate(experiment.model)
+        summary["evaluation"] = {
+            "mse": evaluation.mse,
+            "relative_l2": evaluation.relative_l2,
+            "correlation": evaluation.correlation,
+        }
     (output_dir / "summary.json").write_text(
         json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8"
     )

@@ -43,6 +43,8 @@ class RuntimeConfig:
     execution_profile: str = "parity"
     max_steps: int = 1
     output_dir: Path = Path("outputs")
+    evaluate_after_run: bool = False
+    evaluation_batch_size: int = 65536
 
 
 @dataclass(frozen=True)

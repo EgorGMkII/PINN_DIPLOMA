@@ -21,9 +21,11 @@ def build_smoke_dataset(raw_dir: Path, output: Path, rows_per_time: int, seed: i
             data = archive["data"]
         if data.ndim != 2 or data.shape[1] != 9:
             raise ValueError(f"expected {path.name} data [N,9], got {data.shape}")
-        count = min(rows_per_time, data.shape[0])
-        indices = generator.choice(data.shape[0], size=count, replace=False)
-        samples.append(data[indices])
+        if rows_per_time >= data.shape[0]:
+            samples.append(data)
+        else:
+            indices = generator.choice(data.shape[0], size=rows_per_time, replace=False)
+            samples.append(data[indices])
 
     combined = np.concatenate(samples, axis=0)
     output.parent.mkdir(parents=True, exist_ok=True)

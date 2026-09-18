@@ -25,6 +25,7 @@ from diploma_pinn.boundaries import RBCBoundaryLoss
 class Experiment:
     config: ExperimentConfig
     model: SineMLP
+    dataset: RBCDNSDataset
     trainer: Trainer
 
 
@@ -60,9 +61,9 @@ def build_experiment(config: ExperimentConfig) -> Experiment:
             model,
             optimizer,
             kernel,
-            validate_finite=config.runtime.execution_profile == "smoke",
+            validate_finite=config.runtime.execution_profile in {"smoke", "pilot"},
         ),
         batches,
         max_steps=config.runtime.max_steps,
     )
-    return Experiment(config=config, model=model, trainer=trainer)
+    return Experiment(config=config, model=model, dataset=dataset, trainer=trainer)
