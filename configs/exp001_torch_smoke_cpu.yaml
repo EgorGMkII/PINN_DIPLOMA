@@ -1,0 +1,31 @@
+experiment_id: EXP-001-smoke-local
+data:
+  path: ../data/smoke/RBC_PTV_1E6_07_smoke.npz
+  expected_sha256: 7429d23b6a602901c84b3ada8bb3b1d914ef906baf0825060911c3e7ea23a1d2
+  batch_size: 32
+  observation_sampling: stratified_time
+model:
+  widths: [4, 16, 16, 5]
+  dtype: float32
+physics:
+  formulation: vp
+  rayleigh: 1000000.0
+  prandtl: 0.7
+optimizer:
+  name: adam
+  learning_rate: 0.001
+  beta1: 0.9
+  beta2: 0.999
+  epsilon: 0.0000001
+  fused: false
+runtime:
+  seed: 2204
+  device: cpu
+  execution_profile: smoke
+  max_steps: 3
+  output_dir: ../outputs/smoke-local
+tracking:
+  enabled: false
+  mode: disabled
+  project: diploma-pinn
+  group: EXP-001

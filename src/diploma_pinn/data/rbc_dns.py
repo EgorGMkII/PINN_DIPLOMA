@@ -11,9 +11,9 @@ class RBCDNSDataset:
     """Read DNS fields while exposing only velocity through the training API."""
 
     def __init__(self, path: str | Path, *, dtype: torch.dtype = torch.float32) -> None:
-        archive = np.load(Path(path), allow_pickle=False)
-        inputs = archive["inputs"]
-        outputs = archive["outputs"]
+        with np.load(Path(path), allow_pickle=False) as archive:
+            inputs = archive["inputs"]
+            outputs = archive["outputs"]
         if inputs.ndim != 2 or inputs.shape[1] != 4:
             raise ValueError(f"expected inputs [N,4], got {inputs.shape}")
         if outputs.shape != (inputs.shape[0], 5):

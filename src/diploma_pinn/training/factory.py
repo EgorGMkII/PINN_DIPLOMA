@@ -24,6 +24,7 @@ from diploma_pinn.boundaries import RBCBoundaryLoss
 @dataclass(frozen=True)
 class Experiment:
     config: ExperimentConfig
+    model: SineMLP
     trainer: Trainer
 
 
@@ -55,8 +56,13 @@ def build_experiment(config: ExperimentConfig) -> Experiment:
     formulation = VPResiduals(VPParameters(config.physics.rayleigh, config.physics.prandtl))
     kernel = VPReferenceLossKernel(formulation, LossAssembler(LossWeights()), RBCBoundaryLoss())
     trainer = Trainer(
-        TrainStep(model, optimizer, kernel),
+        TrainStep(
+            model,
+            optimizer,
+            kernel,
+            validate_finite=config.runtime.execution_profile == "smoke",
+        ),
         batches,
         max_steps=config.runtime.max_steps,
     )
-    return Experiment(config=config, trainer=trainer)
+    return Experiment(config=config, model=model, trainer=trainer)

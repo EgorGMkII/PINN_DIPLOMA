@@ -1,0 +1,29 @@
+name: exp-001-torch-smoke
+desc: Run three VP optimizer steps to verify the DiplomaPINN GPU pipeline
+
+cmd: >
+  python3 -m diploma_pinn.cli train --config /job/configs/datasphere/exp001_torch_smoke.yaml --smoke
+
+env:
+  python:
+    type: manual
+    version: 3.10.13
+    requirements-file: requirements-datasphere.txt
+    local-paths:
+      - src/diploma_pinn/
+      - configs/
+      - data/smoke/
+
+outputs:
+  - outputs/
+
+cloud-instance-types:
+  - g1.1
+
+working-storage:
+  type: SSD
+  size: 10Gb
+
+graceful-shutdown:
+  signal: SIGTERM
+  timeout: 30s

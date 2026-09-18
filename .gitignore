@@ -23,6 +23,7 @@ configs/local/
 data/raw/
 data/interim/
 data/processed/
+data/smoke/
 outputs/
 artifacts/
 checkpoints/
@@ -37,4 +38,3 @@ wandb/
 # Keep small, explicitly versioned fixtures
 !tests/fixtures/*.npz
 !tests/fixtures/*.csv
-

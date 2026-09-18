@@ -19,8 +19,9 @@ from this board.
 - [x] Assemble the local one-step VP vertical slice from typed config.
 - [ ] Add TensorFlow weight import/export fixture tooling.
 - [ ] Add output, derivative, residual, gradient and Adam-update parity tests.
-- [ ] Add resolved configuration and run manifest schemas.
+- [x] Add smoke-ready resolved configuration and run manifest schemas.
 - [x] Add evaluator metrics with pressure gauge alignment.
 - [ ] Add W&B adapter outside the hot step.
-- [ ] Add eager benchmark CLI and DataSphere job configs.
+- [x] Add dataset validation, smoke CLI, and first DataSphere GPU job config.
+- [ ] Add eager benchmark CLI and full DataSphere training/benchmark job configs.
 - [ ] Add compiled/fused profiles only after correctness gates pass.

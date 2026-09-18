@@ -83,6 +83,12 @@ policy.
 
 ## 3. Yandex DataSphere
 
+The first executable integration is
+`datasphere/exp-001-torch-smoke.yaml`. It performs three GPU optimizer updates
+on an ignored 2816-row dataset sampled equally from all 11 DNS time levels.
+Operational preparation and launch commands are maintained in
+`datasphere/README.md`.
+
 ### Принцип работы
 
 Каждый тяжелый run запускается как DataSphere job из versioned YAML-конфига, как
@@ -169,4 +175,3 @@ run manifest      -> связывает все перечисленное с com
 
 W&B dashboard или DataSphere job history не заменяют versioned документы и
 конфиги: удаленные записи могут быть удалены или стать недоступными.
-

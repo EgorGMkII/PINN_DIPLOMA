@@ -7,7 +7,7 @@ from pathlib import Path
 @dataclass(frozen=True)
 class DataConfig:
     path: Path
-    expected_sha256: str
+    expected_sha256: str = ""
     batch_size: int = 4096
     observation_sampling: str = "global_shuffle"
 
@@ -41,6 +41,7 @@ class RuntimeConfig:
     device: str = "auto"
     execution_profile: str = "parity"
     max_steps: int = 1
+    output_dir: Path = Path("outputs")
 
 
 @dataclass(frozen=True)
