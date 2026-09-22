@@ -1,0 +1,29 @@
+name: exp-001-torch-article-200epochs
+desc: Train the reference PyTorch VP baseline for 200 complete passes over the article DNS dataset
+
+cmd: >
+  python3 -m diploma_pinn.cli train --config /job/configs/datasphere/exp001_torch_article_200epochs.yaml
+
+env:
+  python:
+    type: manual
+    version: 3.10.13
+    requirements-file: requirements-datasphere.txt
+    local-paths:
+      - src/diploma_pinn/
+      - configs/
+      - data/processed/
+
+outputs:
+  - outputs/
+
+cloud-instance-types:
+  - g1.1
+
+working-storage:
+  type: SSD
+  size: 100Gb
+
+graceful-shutdown:
+  signal: SIGTERM
+  timeout: 30s

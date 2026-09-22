@@ -48,6 +48,10 @@ When prose and code disagree, report the discrepancy. Do not silently choose one
   output paths.
 - Never put W&B or DataSphere credentials in source, configs, documentation,
   shell history examples, or run manifests.
+- For a remote job expected to last an hour or more, create a timer-backed
+  follow-up before ending the turn. Check its status no later than the stated
+  estimate, report completion/failure promptly, and keep checking at a useful
+  cadence until results are downloaded or the job needs intervention.
 
 ## Implementation Rules
 

@@ -2,10 +2,12 @@
 
 from dataclasses import dataclass
 
+from torch.optim import Optimizer
+
 from diploma_pinn.config import ExperimentConfig
 from diploma_pinn.data import RBCDNSDataset
-from diploma_pinn.formulations import VPParameters, VPResiduals
-from diploma_pinn.losses import LossAssembler, LossWeights, VPReferenceLossKernel
+from diploma_pinn.formulations import VPParameters, VPResiduals, VVResiduals
+from diploma_pinn.losses import LossAssembler, LossWeights, VPReferenceLossKernel, VVLossKernel
 from diploma_pinn.models import SineMLP
 from diploma_pinn.runtime import resolve_device, resolve_dtype
 from diploma_pinn.sampling import (
@@ -15,7 +17,7 @@ from diploma_pinn.sampling import (
     StratifiedTimeSampler,
     UniformDomainSampler,
 )
-from diploma_pinn.training.optimizers import build_optimizer
+from diploma_pinn.training.optimizers import build_optimizer, build_scheduler
 from diploma_pinn.training.step import TrainStep
 from diploma_pinn.training.trainer import Trainer
 from diploma_pinn.boundaries import RBCBoundaryLoss
@@ -26,6 +28,8 @@ class Experiment:
     config: ExperimentConfig
     model: SineMLP
     dataset: RBCDNSDataset
+    optimizer: Optimizer
+    scheduler: object | None
     trainer: Trainer
 
 
@@ -54,8 +58,24 @@ def build_experiment(config: ExperimentConfig) -> Experiment:
     )
     model = SineMLP(config.model.widths).to(device=device, dtype=dtype)
     optimizer = build_optimizer(model, config.optimizer)
-    formulation = VPResiduals(VPParameters(config.physics.rayleigh, config.physics.prandtl))
-    kernel = VPReferenceLossKernel(formulation, LossAssembler(LossWeights()), RBCBoundaryLoss())
+    scheduler = (
+        build_scheduler(optimizer, config.optimizer)
+        if config.runtime.scheduler_epoch_steps > 0
+        else None
+    )
+    parameters = VPParameters(config.physics.rayleigh, config.physics.prandtl)
+    kernels = {
+        "vp": lambda: VPReferenceLossKernel(
+            VPResiduals(parameters), LossAssembler(LossWeights()), RBCBoundaryLoss()
+        ),
+        "vv": lambda: VVLossKernel(
+            VVResiduals(parameters), LossAssembler(LossWeights()), RBCBoundaryLoss()
+        ),
+    }
+    try:
+        kernel = kernels[config.physics.formulation]()
+    except KeyError as error:
+        raise ValueError(f"unsupported physics formulation: {config.physics.formulation}") from error
     trainer = Trainer(
         TrainStep(
             model,
@@ -65,5 +85,14 @@ def build_experiment(config: ExperimentConfig) -> Experiment:
         ),
         batches,
         max_steps=config.runtime.max_steps,
+        scheduler=scheduler,
+        scheduler_epoch_steps=config.runtime.scheduler_epoch_steps,
     )
-    return Experiment(config=config, model=model, dataset=dataset, trainer=trainer)
+    return Experiment(
+        config=config,
+        model=model,
+        dataset=dataset,
+        optimizer=optimizer,
+        scheduler=scheduler,
+        trainer=trainer,
+    )

@@ -43,8 +43,11 @@ class RuntimeConfig:
     execution_profile: str = "parity"
     max_steps: int = 1
     output_dir: Path = Path("outputs")
+    scheduler_epoch_steps: int = 0
     evaluate_after_run: bool = False
     evaluation_batch_size: int = 65536
+    save_final_checkpoint: bool = True
+    write_diagnostics: bool = True
 
 
 @dataclass(frozen=True)

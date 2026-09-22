@@ -1,0 +1,36 @@
+experiment_id: EXP-001-article-data-200epochs
+data:
+  path: /job/processed/RBC_PTV_1E6_07_t_11.npz
+  expected_sha256: 7da325eb40b5a1f86dff57a90adfd107eefb9a830852e6a8716c128d61e76615
+  batch_size: 4096
+  observation_sampling: global_shuffle
+model:
+  widths: [4, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 5]
+  dtype: float32
+physics:
+  formulation: vp
+  rayleigh: 1000000.0
+  prandtl: 0.7
+optimizer:
+  name: adam
+  learning_rate: 0.001
+  beta1: 0.9
+  beta2: 0.999
+  epsilon: 0.0000001
+  fused: false
+runtime:
+  seed: 2204
+  deterministic: false
+  device: cuda
+  execution_profile: article-data-200epochs
+  # 2,883,584 rows / 4,096 rows per update = 704 updates per full pass.
+  max_steps: 140800
+  scheduler_epoch_steps: 704
+  output_dir: /job/outputs/EXP-001-article-data-200epochs
+  evaluate_after_run: true
+  evaluation_batch_size: 65536
+tracking:
+  enabled: false
+  mode: disabled
+  project: diploma-pinn
+  group: EXP-001

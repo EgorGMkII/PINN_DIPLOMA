@@ -4,6 +4,7 @@ import torch
 from torch import nn
 
 from diploma_pinn.data import RBCDNSDataset
+from diploma_pinn.evaluation.diagnostics import FieldDiagnostics, compute_field_diagnostics
 from diploma_pinn.evaluation.metrics import FieldMetrics, compute_field_metrics
 
 
@@ -14,7 +15,7 @@ class Evaluator:
         self._dataset = dataset
         self._batch_size = batch_size
 
-    def evaluate(self, model: nn.Module) -> FieldMetrics:
+    def predict_full(self, model: nn.Module) -> torch.Tensor:
         device = next(model.parameters()).device
         dtype = next(model.parameters()).dtype
         was_training = model.training
@@ -25,6 +26,12 @@ class Evaluator:
                 points = self._dataset.points[start : start + self._batch_size].to(device=device, dtype=dtype)
                 predictions.append(model(points).cpu())
         model.train(was_training)
+        return torch.cat(predictions)
+
+    def evaluate(self, model: nn.Module) -> FieldMetrics:
         return compute_field_metrics(
-            torch.cat(predictions), self._dataset.evaluation_fields(), self._dataset.points[:, 0]
+            self.predict_full(model), self._dataset.evaluation_fields(), self._dataset.points[:, 0]
         )
+
+    def diagnose(self, predicted: torch.Tensor) -> FieldDiagnostics:
+        return compute_field_diagnostics(predicted, self._dataset.evaluation_fields(), self._dataset.points)

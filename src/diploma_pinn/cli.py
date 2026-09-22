@@ -2,6 +2,7 @@
 
 import argparse
 from datetime import datetime, timezone
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -12,7 +13,8 @@ import torch
 
 from diploma_pinn.config import config_to_dict, load_config, write_resolved_config
 from diploma_pinn.data import validate_rbc_dns
-from diploma_pinn.evaluation import Evaluator
+from diploma_pinn.evaluation import Evaluator, compute_field_metrics
+from diploma_pinn.instrumentation.checkpoints import save_checkpoint
 from diploma_pinn.instrumentation.manifest import RunManifest, collect_environment
 from diploma_pinn.runtime import seed_everything
 from diploma_pinn.training.factory import build_experiment
@@ -68,6 +70,17 @@ def _run_training(config, *, require_smoke: bool) -> int:
     if not parameters_changed:
         raise RuntimeError("optimizer completed but no model parameter changed")
 
+    config_fingerprint = _config_fingerprint(config)
+    if config.runtime.save_final_checkpoint:
+        save_checkpoint(
+            output_dir / "checkpoints" / "final.pt",
+            experiment.model,
+            experiment.optimizer,
+            config.runtime.max_steps - 1,
+            scheduler=experiment.scheduler,
+            config_fingerprint=config_fingerprint,
+        )
+
     summary = {
         "status": "ok",
         "experiment_id": config.experiment_id,
@@ -82,12 +95,21 @@ def _run_training(config, *, require_smoke: bool) -> int:
         "dataset_sha256": report.sha256,
     }
     if config.runtime.evaluate_after_run:
-        evaluation = Evaluator(experiment.dataset, config.runtime.evaluation_batch_size).evaluate(experiment.model)
+        evaluator = Evaluator(experiment.dataset, config.runtime.evaluation_batch_size)
+        predicted = evaluator.predict_full(experiment.model)
+        evaluation = compute_field_metrics(
+            predicted, experiment.dataset.evaluation_fields(), experiment.dataset.points[:, 0]
+        )
         summary["evaluation"] = {
             "mse": evaluation.mse,
             "relative_l2": evaluation.relative_l2,
             "correlation": evaluation.correlation,
         }
+        if config.runtime.write_diagnostics:
+            diagnostics = evaluator.diagnose(predicted)
+            (output_dir / "diagnostics.json").write_text(
+                json.dumps(diagnostics.__dict__, indent=2, sort_keys=True), encoding="utf-8"
+            )
     (output_dir / "summary.json").write_text(
         json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8"
     )
@@ -122,6 +144,11 @@ def _git_state() -> tuple[str, bool]:
         return commit, dirty
     except (FileNotFoundError, subprocess.CalledProcessError):
         return "unknown", False
+
+
+def _config_fingerprint(config: object) -> str:
+    serialized = json.dumps(config_to_dict(config), sort_keys=True, default=str)
+    return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
 
 if __name__ == "__main__":

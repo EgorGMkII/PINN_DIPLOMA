@@ -84,8 +84,15 @@ def load_config(path: Path, *, local_overlay: Path | None = None) -> ExperimentC
         runtime=_strict_dataclass(RuntimeConfig, runtime_values),
         tracking=_strict_dataclass(TrackingConfig, raw.get("tracking", {})),
     )
-    if config.model.widths[0] != 4 or config.model.widths[-1] != 5:
-        raise ValueError("model widths must start with 4 and end with 5")
+    expected_outputs = {"vp": 5, "vv": 4}
+    try:
+        output_width = expected_outputs[config.physics.formulation]
+    except KeyError as error:
+        raise ValueError(f"unsupported physics formulation: {config.physics.formulation}") from error
+    if config.model.widths[0] != 4 or config.model.widths[-1] != output_width:
+        raise ValueError(
+            f"{config.physics.formulation} model widths must start with 4 and end with {output_width}"
+        )
     if config.runtime.execution_profile == "smoke" and config.runtime.max_steps > 10:
         raise ValueError("smoke profile is limited to 10 optimizer steps")
     return config

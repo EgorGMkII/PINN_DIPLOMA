@@ -12,6 +12,7 @@ from diploma_pinn.contracts import LossReport
 class LossWeights:
     data: float = 1.0
     momentum: float = 1e-1
+    vorticity: float = 1e-1
     energy: float = 1e-2
     continuity: float = 1e-3
     boundary: float = 1e-4
