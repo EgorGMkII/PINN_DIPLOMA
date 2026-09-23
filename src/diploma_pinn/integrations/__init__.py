@@ -1,3 +1,3 @@
-from .tracking import NullTracker, Tracker
+from .tracking import JsonlTracker, NullTracker, Tracker, build_tracker, build_wandb_tracker
 
-__all__ = ["NullTracker", "Tracker"]
+__all__ = ["JsonlTracker", "NullTracker", "Tracker", "build_tracker", "build_wandb_tracker"]

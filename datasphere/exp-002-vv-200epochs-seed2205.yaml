@@ -1,0 +1,9 @@
+name: exp-002-vv-200epochs-seed2205
+desc: Matched VV replication seed 2205 with pressure recovery
+cmd: python3 -m diploma_pinn.cli train --config /job/configs/datasphere/exp002_vv_200epochs.yaml --local-overlay /job/configs/datasphere/seed2205.yaml
+env:
+  python: {type: manual, version: 3.10.13, requirements-file: requirements-datasphere.txt, local-paths: [src/diploma_pinn/, configs/, data/processed/]}
+outputs: [outputs/]
+cloud-instance-types: [g1.1]
+working-storage: {type: SSD, size: 100Gb}
+graceful-shutdown: {signal: SIGTERM, timeout: 30s}

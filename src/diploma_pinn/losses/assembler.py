@@ -16,6 +16,8 @@ class LossWeights:
     energy: float = 1e-2
     continuity: float = 1e-3
     boundary: float = 1e-4
+    velocity_gradient: float = 1e-1
+    temperature_gradient: float = 1e-2
 
 
 class LossAssembler:

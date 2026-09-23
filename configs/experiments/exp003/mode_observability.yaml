@@ -1,0 +1,8 @@
+experiment_id: EXP-003-mode-observability
+data:
+  path: ../../../data/processed/RBC_PTV_1E6_07_t_11.npz
+  expected_sha256: 7da325eb40b5a1f86dff57a90adfd107eefb9a830852e6a8716c128d61e76615
+runtime:
+  seed: 2204
+  evaluation_sample_size: 65536
+  output_dir: ../../../outputs/EXP-003-mode-observability

@@ -83,3 +83,15 @@ training видит только разрешенные velocity rows. T,p ос�
 Для PTV нельзя считать нулевые T,p ground truth. Без независимой температуры или
 давления выводы ограничиваются скоростью, PDE consistency и физическими
 статистиками.
+# PTV density calibration
+
+The velocity-only exports use tab-separated columns
+`t,X,Y,Z,VX,VY,VZ,T,p`. The last two columns are zero placeholders.
+
+- `all_points_001_metric.csv`: 810,000 rows, 100 times, 8,100 rows/time.
+- `all_points_005_metric.csv`: 4,050,000 rows, 100 times, 40,500 rows/time.
+- article DNS: 262,144 rows/time for 11 times.
+
+Matched DNS sparsity therefore uses exact `observations_per_time`, not fractions
+0.01 and 0.05. Synthetic-noise magnitude is recorded in normalized velocity
+units and must be fixed before reconstruction runs.

@@ -52,3 +52,20 @@ def test_factory_runs_one_cpu_vv_update(tmp_path: Path) -> None:
     metrics = build_experiment(config).trainer.run()
     assert metrics.step == 0
     assert metrics.total >= 0
+
+
+def test_factory_runs_one_cpu_fo_update(tmp_path: Path) -> None:
+    path = tmp_path / "dns.npz"
+    inputs = np.array([[time, 0.2, 0.3, 0.4] for time in (0.0, 0.5) for _ in range(4)], dtype=np.float32)
+    outputs = np.zeros((len(inputs), 5), dtype=np.float32)
+    np.savez(path, inputs=inputs, outputs=outputs)
+    config = ExperimentConfig(
+        experiment_id="fo-test",
+        data=DataConfig(path=path, expected_sha256="", batch_size=4),
+        model=ModelConfig(widths=(4, 8, 17)),
+        physics=PhysicsConfig(formulation="fo"),
+        runtime=RuntimeConfig(device="cpu", max_steps=1),
+    )
+    metrics = build_experiment(config).trainer.run()
+    assert metrics.step == 0
+    assert metrics.total >= 0

@@ -64,7 +64,7 @@ class StratifiedTimeSampler:
         selections: list[Tensor] = []
         updated_orders: list[Tensor] = []
         for group, order, cursor, quota in zip(
-            self._groups, self._orders, self._cursors, quotas, strict=True
+            self._groups, self._orders, self._cursors, quotas
         ):
             draw = _draw_from_permutation(group.numel(), quota, self._generator, order, cursor)
             selections.append(group.index_select(0, draw.values))

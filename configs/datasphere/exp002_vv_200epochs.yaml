@@ -1,0 +1,30 @@
+experiment_id: EXP-002-vv-200epochs-seed2204
+data:
+  path: /job/processed/RBC_PTV_1E6_07_t_11.npz
+  expected_sha256: 7da325eb40b5a1f86dff57a90adfd107eefb9a830852e6a8716c128d61e76615
+  batch_size: 4096
+  observation_sampling: stratified_time
+model:
+  widths: [4, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 4]
+physics: {formulation: vv, rayleigh: 1000000.0, prandtl: 0.7}
+optimizer: {name: adam, learning_rate: 0.001, beta1: 0.9, beta2: 0.999, epsilon: 0.0000001, fused: false}
+runtime:
+  seed: 2204
+  device: cuda
+  execution_profile: full
+  max_steps: 140800
+  scheduler_epoch_steps: 704
+  evaluation_interval_epochs: 10
+  evaluation_sample_size: 65536
+  evaluate_after_run: true
+  pde_evaluation_size: 4096
+  log_interval_steps: 10
+  output_dir: /job/outputs/EXP-002-vv-200epochs
+tracking: {enabled: true, mode: online, project: diploma-pinn, group: EXP-002, run_name: vv-200epochs-seed2204}
+pressure_recovery:
+  enabled: true
+  widths: [4, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 1]
+  epochs: 100
+  batch_size: 4096
+  learning_rate: 0.001
+  gauge_weight: 1.0

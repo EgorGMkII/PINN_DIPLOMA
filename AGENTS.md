@@ -75,9 +75,12 @@ are out of scope until the main comparison reaches its decision gate.
 
 ## Current Implementation Stage
 
-The active scope is the `EXP-001` VP vertical slice. Follow
-`docs/specifications/implementation_tasks.md` in order. Do not fill several TODOs
-at once without running the focused correctness tests for the preceding task.
-Residual-adaptive sampling is not part of EXP-001. The post-parity observation
-sampler is stratified by time; the parity sampler remains the article's global
-shuffle.
+EXP-001 VP parity is complete. The active sequence is EXP-002 matched VP--VV,
+EXP-003 mode observability, then EXP-004 FO. Do not launch full VP/VV/FO or
+sparse/noisy matrices before their documented pilot gates. The parity sampler
+remains global shuffle; post-parity experiments use stratified-time sampling.
+
+There are no periodic checkpoints. Preserve one complete `checkpoints/final.pt`
+per run. DNS `T,p` may be read only by evaluation; PTV `T,p` columns are zero
+placeholders. The labels `001` and `005` are not percentages: they contain 8,100
+and 40,500 observations per time respectively.

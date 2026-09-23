@@ -1,5 +1,7 @@
 """Atomic, versioned checkpoints for reproducible training runs."""
 
+from __future__ import annotations
+
 from pathlib import Path
 
 import torch
@@ -7,7 +9,7 @@ from torch import nn
 from torch.optim import Optimizer
 
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 
 def save_checkpoint(
@@ -18,6 +20,7 @@ def save_checkpoint(
     *,
     scheduler: object | None = None,
     config_fingerprint: str = "",
+    auxiliary: dict[str, object] | None = None,
 ) -> None:
     """Save a complete final state without leaving a partially written file."""
     if step < 0:
@@ -32,6 +35,7 @@ def save_checkpoint(
         "rng_cpu": torch.get_rng_state(),
         "rng_cuda": torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None,
         "config_fingerprint": config_fingerprint,
+        "auxiliary": auxiliary or {},
     }
     temporary = path.with_suffix(path.suffix + ".tmp")
     torch.save(payload, temporary)
@@ -48,7 +52,7 @@ def load_checkpoint(
 ) -> int:
     """Restore state and return the last completed zero-based optimizer step."""
     payload = torch.load(path, map_location="cpu", weights_only=False)
-    if payload.get("schema_version") != SCHEMA_VERSION:
+    if payload.get("schema_version") not in {1, SCHEMA_VERSION}:
         raise ValueError("unsupported checkpoint schema")
     if expected_config_fingerprint and payload.get("config_fingerprint") != expected_config_fingerprint:
         raise ValueError("checkpoint configuration fingerprint does not match")

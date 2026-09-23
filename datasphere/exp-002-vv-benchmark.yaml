@@ -1,0 +1,13 @@
+name: exp-002-vv-benchmark
+desc: Measure full direct-VV warm-step time and peak GPU memory
+cmd: python3 -m diploma_pinn.cli benchmark --config /job/configs/datasphere/exp002_vv_benchmark.yaml
+env:
+  python:
+    type: manual
+    version: 3.10.13
+    requirements-file: requirements-datasphere.txt
+    local-paths: [src/diploma_pinn/, configs/, data/processed/]
+outputs: [outputs/]
+cloud-instance-types: [g1.1]
+working-storage: {type: SSD, size: 100Gb}
+graceful-shutdown: {signal: SIGTERM, timeout: 30s}

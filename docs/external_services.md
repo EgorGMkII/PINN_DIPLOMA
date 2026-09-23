@@ -132,9 +132,9 @@ outputs/<experiment_id>/<run_id>/
   resolved_config.yaml
   metrics.jsonl
   summary.json
-  profiler/
-  figures/
-  checkpoints/
+  profiler.json
+  diagnostics.json
+  checkpoints/final.pt
 ```
 
 Job должен корректно завершаться по `SIGTERM`, сохранить последний разрешенный
@@ -175,3 +175,8 @@ run manifest      -> связывает все перечисленное с com
 
 W&B dashboard или DataSphere job history не заменяют versioned документы и
 конфиги: удаленные записи могут быть удалены или стать недоступными.
+
+Current EXP-002 jobs are versioned under `datasphere/`. Online W&B mode falls
+back to an offline run when initialization cannot reach the service; the local
+`metrics.jsonl` is always written. `WANDB_API_KEY` is supplied only through the
+DataSphere secret/environment mechanism.

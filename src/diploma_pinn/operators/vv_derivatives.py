@@ -44,7 +44,7 @@ def compute_vv_derivatives(model: nn.Module, points: Tensor) -> VVFieldDerivativ
     if outputs.ndim != 2 or outputs.shape != (points.shape[0], 4):
         raise ValueError(f"expected VV model output [N,4], got {tuple(outputs.shape)}")
 
-    fields = dict(zip(("u", "v", "w", "T"), outputs.unbind(dim=1), strict=True))
+    fields = dict(zip(("u", "v", "w", "T"), outputs.unbind(dim=1)))
     axis_names = ("t", "x", "y", "z")
     axis_indices = {axis: index for index, axis in enumerate(axis_names)}
     first: dict[str, Tensor] = {}

@@ -1,4 +1,5 @@
 import torch
+from diploma_pinn.data import VelocityDatasetView
 
 from diploma_pinn.data import RBCDNSDataset
 from diploma_pinn.sampling import (
@@ -50,3 +51,33 @@ def test_domain_and_boundary_sampling_reuse_time_and_respect_cube() -> None:
     assert torch.all((boundaries["y"][:, 2] == 0) | (boundaries["y"][:, 2] == 1))
     assert torch.all(boundaries["z0"][:, 3] == 0)
     assert torch.all(boundaries["z1"][:, 3] == 1)
+
+class _VelocityDataset:
+    def __init__(self) -> None:
+        self.points = torch.tensor([[t, x, 0.0, 0.0] for t in (0.0, 1.0) for x in range(10)])
+        self._velocity = self.points[:, 1:].clone()
+
+    @property
+    def velocity(self):
+        return self._velocity
+
+    @property
+    def times(self):
+        return torch.unique(self.points[:, 0], sorted=True)
+
+
+def test_velocity_view_uses_disjoint_deterministic_holdout() -> None:
+    dataset = _VelocityDataset()
+    train = VelocityDatasetView(
+        dataset, fraction=1.0, per_time=0, noise_std=0.0, seed=7,
+        holdout_fraction=0.2, partition="train",
+    )
+    holdout = VelocityDatasetView(
+        dataset, fraction=1.0, per_time=0, noise_std=0.0, seed=7,
+        holdout_fraction=0.2, partition="holdout",
+    )
+    assert train.points.shape[0] == 16
+    assert holdout.points.shape[0] == 4
+    assert not {tuple(row.tolist()) for row in train.points}.intersection(
+        {tuple(row.tolist()) for row in holdout.points}
+    )

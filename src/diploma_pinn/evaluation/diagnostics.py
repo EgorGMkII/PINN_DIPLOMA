@@ -1,5 +1,7 @@
 """Mode-resolved diagnostics for hidden temperature and pressure fields."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 import torch
@@ -15,9 +17,13 @@ class FieldDiagnostics:
     pressure_hydrostatic: dict[str, object] | None
     pressure_dynamic: dict[str, float] | None
     convective_heat_flux_profile: dict[str, object]
+    temperature_modes: dict[str, object]
+    nusselt_proxy: dict[str, float]
 
 
-def compute_field_diagnostics(predicted: Tensor, target: Tensor, points: Tensor) -> FieldDiagnostics:
+def compute_field_diagnostics(
+    predicted: Tensor, target: Tensor, points: Tensor, *, diffusivity: float | None = None
+) -> FieldDiagnostics:
     """Decompose fields by horizontal planes for the RBC DNS grid."""
     if (
         predicted.ndim != 2
@@ -67,10 +73,35 @@ def compute_field_diagnostics(predicted: Tensor, target: Tensor, points: Tensor)
         pressure_hydrostatic = profile(pressure_predicted, pressure_target)
         pressure_dynamic = compute_scalar_metrics(pressure_dynamic_predicted, pressure_dynamic_target)
 
+    temperature_modes: dict[str, object] = {}
+    for axis_name, axis_index in (("x", 1), ("y", 2)):
+        coordinate = points[:, axis_index]
+        for wave_number in range(1, 4):
+            angle = 2 * torch.pi * wave_number * coordinate
+            predicted_amplitude = torch.sqrt(
+                (2 * (temperature_fluctuation_predicted * torch.cos(angle)).mean()).square()
+                + (2 * (temperature_fluctuation_predicted * torch.sin(angle)).mean()).square()
+            )
+            target_amplitude = torch.sqrt(
+                (2 * (temperature_fluctuation_target * torch.cos(angle)).mean()).square()
+                + (2 * (temperature_fluctuation_target * torch.sin(angle)).mean()).square()
+            )
+            temperature_modes[f"{axis_name}_{wave_number}"] = {
+                "predicted_amplitude": float(predicted_amplitude),
+                "target_amplitude": float(target_amplitude),
+            }
+    mean_flux_predicted = float((predicted[:, 2] * predicted[:, 3]).mean())
+    mean_flux_target = float((target[:, 2] * target[:, 3]).mean())
+    scale = 1.0 if diffusivity is None else 1.0 / diffusivity
     return FieldDiagnostics(
         temperature_profile=profile(temperature_predicted, temperature_target),
         temperature_fluctuations=compute_scalar_metrics(temperature_fluctuation_predicted, temperature_fluctuation_target),
         pressure_hydrostatic=pressure_hydrostatic,
         pressure_dynamic=pressure_dynamic,
         convective_heat_flux_profile=profile(flux_predicted, flux_target),
+        temperature_modes=temperature_modes,
+        nusselt_proxy={
+            "predicted": 1.0 + scale * mean_flux_predicted,
+            "target": 1.0 + scale * mean_flux_target,
+        },
     )

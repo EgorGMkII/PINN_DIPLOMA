@@ -7,9 +7,14 @@ from pathlib import Path
 @dataclass(frozen=True)
 class DataConfig:
     path: Path
+    kind: str = "rbc_dns"
     expected_sha256: str = ""
     batch_size: int = 4096
     observation_sampling: str = "global_shuffle"
+    observation_fraction: float = 1.0
+    observations_per_time: int = 0
+    velocity_noise_std: float = 0.0
+    holdout_fraction: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -48,6 +53,13 @@ class RuntimeConfig:
     evaluation_batch_size: int = 65536
     save_final_checkpoint: bool = True
     write_diagnostics: bool = True
+    evaluation_interval_epochs: int = 0
+    evaluation_sample_size: int = 65536
+    profile_steps: bool = False
+    benchmark_warmup_steps: int = 20
+    benchmark_steps: int = 50
+    pde_evaluation_size: int = 0
+    log_interval_steps: int = 1
 
 
 @dataclass(frozen=True)
@@ -56,6 +68,18 @@ class TrackingConfig:
     mode: str = "disabled"
     project: str = "diploma-pinn"
     group: str = "EXP-001"
+    run_name: str = ""
+
+
+@dataclass(frozen=True)
+class PressureRecoveryConfig:
+    enabled: bool = False
+    widths: tuple[int, ...] = (4, *(256,) * 10, 1)
+    epochs: int = 100
+    batch_size: int = 4096
+    learning_rate: float = 1e-3
+    gauge_weight: float = 1.0
+    log_interval_steps: int = 10
 
 
 @dataclass(frozen=True)
@@ -67,3 +91,4 @@ class ExperimentConfig:
     optimizer: OptimizerConfig = field(default_factory=OptimizerConfig)
     runtime: RuntimeConfig = field(default_factory=RuntimeConfig)
     tracking: TrackingConfig = field(default_factory=TrackingConfig)
+    pressure_recovery: PressureRecoveryConfig = field(default_factory=PressureRecoveryConfig)

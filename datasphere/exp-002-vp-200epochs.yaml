@@ -1,0 +1,13 @@
+name: exp-002-vp-200epochs
+desc: Full matched VP run after the pilot gate
+cmd: python3 -m diploma_pinn.cli train --config /job/configs/datasphere/exp002_vp_200epochs.yaml
+env:
+  python:
+    type: manual
+    version: 3.10.13
+    requirements-file: requirements-datasphere.txt
+    local-paths: [src/diploma_pinn/, configs/, data/processed/]
+outputs: [outputs/]
+cloud-instance-types: [g1.1]
+working-storage: {type: SSD, size: 100Gb}
+graceful-shutdown: {signal: SIGTERM, timeout: 30s}

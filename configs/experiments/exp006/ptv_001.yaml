@@ -1,0 +1,13 @@
+experiment_id: EXP-006-ptv-001
+data:
+  path: ../../../../multipinnFolder/all_points_001_metric.csv
+  kind: ptv_csv
+  batch_size: 4096
+  observation_sampling: stratified_time
+  holdout_fraction: 0.1
+runtime:
+  seed: 2204
+  device: cuda
+  max_steps: 1
+  evaluate_after_run: false
+  output_dir: ../../../outputs/EXP-006-ptv-001

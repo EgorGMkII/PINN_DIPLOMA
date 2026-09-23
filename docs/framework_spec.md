@@ -195,4 +195,21 @@ wall time and peak memory
 
 Термин `epoch` может использоваться для UI, но не является основной единицей
 сравнения между реализациями.
+# Current formulation and analysis modules
+
+The formulation switch is `physics.formulation: vp|vv|fo`. VP, VV and FO own
+their derivative operators and loss kernels; switching one does not modify the
+others. FO uses 17 outputs with `(u,v,w,T,p)` first so common evaluation remains
+compatible.
+
+VV pressure recovery is post-processing: the trained VV model is frozen and a
+scalar sine MLP fits the momentum-implied pressure gradient. Its state is stored
+inside the single final experiment checkpoint.
+
+`analysis.observability` evaluates prescribed temperature modes without a
+training run. `VelocityDatasetView` owns deterministic DNS masks and synthetic
+velocity noise. PTV CSV loading exposes only coordinates and velocities.
+
+Every training run writes local JSONL metrics. Optional W&B, evaluation and
+profiling stay outside the differentiable loss kernel.
 

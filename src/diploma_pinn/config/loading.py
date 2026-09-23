@@ -1,5 +1,7 @@
 """Strict YAML loading and resolved-configuration serialization."""
 
+from __future__ import annotations
+
 from dataclasses import asdict, fields
 from pathlib import Path
 from typing import Any, Mapping, TypeVar
@@ -12,6 +14,7 @@ from diploma_pinn.config.schema import (
     ModelConfig,
     OptimizerConfig,
     PhysicsConfig,
+    PressureRecoveryConfig,
     RuntimeConfig,
     TrackingConfig,
 )
@@ -52,7 +55,10 @@ def load_config(path: Path, *, local_overlay: Path | None = None) -> ExperimentC
     if local_overlay is not None:
         raw = _deep_merge(raw, _read_yaml(Path(local_overlay).resolve()))
 
-    allowed = {"experiment_id", "data", "model", "physics", "optimizer", "runtime", "tracking"}
+    allowed = {
+        "experiment_id", "data", "model", "physics", "optimizer", "runtime",
+        "tracking", "pressure_recovery",
+    }
     unknown = set(raw).difference(allowed)
     if unknown:
         raise ValueError(f"unknown ExperimentConfig keys: {sorted(unknown)}")
@@ -75,6 +81,10 @@ def load_config(path: Path, *, local_overlay: Path | None = None) -> ExperimentC
     if "widths" in model_values:
         model_values["widths"] = tuple(int(value) for value in model_values["widths"])
 
+    pressure_values = dict(raw.get("pressure_recovery", {}))
+    if "widths" in pressure_values:
+        pressure_values["widths"] = tuple(int(value) for value in pressure_values["widths"])
+
     config = ExperimentConfig(
         experiment_id=str(raw["experiment_id"]),
         data=_strict_dataclass(DataConfig, data_values),
@@ -83,8 +93,9 @@ def load_config(path: Path, *, local_overlay: Path | None = None) -> ExperimentC
         optimizer=_strict_dataclass(OptimizerConfig, raw.get("optimizer", {})),
         runtime=_strict_dataclass(RuntimeConfig, runtime_values),
         tracking=_strict_dataclass(TrackingConfig, raw.get("tracking", {})),
+        pressure_recovery=_strict_dataclass(PressureRecoveryConfig, pressure_values),
     )
-    expected_outputs = {"vp": 5, "vv": 4}
+    expected_outputs = {"vp": 5, "vv": 4, "fo": 17}
     try:
         output_width = expected_outputs[config.physics.formulation]
     except KeyError as error:
@@ -95,6 +106,35 @@ def load_config(path: Path, *, local_overlay: Path | None = None) -> ExperimentC
         )
     if config.runtime.execution_profile == "smoke" and config.runtime.max_steps > 10:
         raise ValueError("smoke profile is limited to 10 optimizer steps")
+    if config.runtime.evaluation_interval_epochs < 0:
+        raise ValueError("evaluation_interval_epochs must be non-negative")
+    if config.runtime.evaluation_sample_size <= 0:
+        raise ValueError("evaluation_sample_size must be positive")
+    if config.runtime.benchmark_warmup_steps < 0 or config.runtime.benchmark_steps <= 0:
+        raise ValueError("benchmark step counts are invalid")
+    if config.runtime.pde_evaluation_size < 0:
+        raise ValueError("pde_evaluation_size must be non-negative")
+    if config.runtime.log_interval_steps <= 0:
+        raise ValueError("log_interval_steps must be positive")
+    if config.data.kind not in {"rbc_dns", "ptv_csv"}:
+        raise ValueError("data.kind must be rbc_dns or ptv_csv")
+    if not 0 < config.data.observation_fraction <= 1:
+        raise ValueError("observation_fraction must be in (0,1]")
+    if config.data.observations_per_time < 0 or config.data.velocity_noise_std < 0:
+        raise ValueError("observation counts and noise must be non-negative")
+    if not 0 <= config.data.holdout_fraction < 1:
+        raise ValueError("holdout_fraction must be in [0,1)")
+    if config.data.observations_per_time and config.data.observation_fraction != 1.0:
+        raise ValueError("use either observations_per_time or observation_fraction, not both")
+    recovery = config.pressure_recovery
+    if recovery.widths[0] != 4 or recovery.widths[-1] != 1:
+        raise ValueError("pressure recovery widths must start with 4 and end with 1")
+    if recovery.epochs <= 0 or recovery.batch_size <= 0:
+        raise ValueError("pressure recovery epochs and batch_size must be positive")
+    if recovery.log_interval_steps <= 0:
+        raise ValueError("pressure recovery log_interval_steps must be positive")
+    if recovery.enabled and config.physics.formulation != "vv":
+        raise ValueError("pressure recovery is supported only for the VV formulation")
     return config
 
 

@@ -29,7 +29,7 @@ def compute_vp_derivatives(model: nn.Module, points: Tensor) -> FieldDerivatives
         raise ValueError(f"expected model output [N,5], got {tuple(outputs.shape)}")
 
     field_names = ("u", "v", "w", "T", "p")
-    fields = dict(zip(field_names, outputs.unbind(dim=1), strict=True))
+    fields = dict(zip(field_names, outputs.unbind(dim=1)))
     first: dict[str, Tensor] = {}
     second: dict[str, Tensor] = {}
     derivative_fields = ("u", "v", "w", "T")

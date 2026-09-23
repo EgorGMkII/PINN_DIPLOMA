@@ -37,8 +37,8 @@ class VVResiduals:
         def transport(name: str, velocity_name: str) -> Tensor:
             return (
                 omega_first[f"{name}_t"]
-                + sum(component * omega_first[f"{name}_{axis}"] for component, axis in zip(velocity, ("x", "y", "z"), strict=True))
-                - sum(component * first[f"{velocity_name}_{axis}"] for component, axis in zip(vorticity, ("x", "y", "z"), strict=True))
+                + sum(component * omega_first[f"{name}_{axis}"] for component, axis in zip(velocity, ("x", "y", "z")))
+                - sum(component * first[f"{velocity_name}_{axis}"] for component, axis in zip(vorticity, ("x", "y", "z")))
                 - viscosity * laplacian(name)
             )
 
